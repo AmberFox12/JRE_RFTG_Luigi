@@ -74,6 +74,9 @@ public class PanierActivity  extends AppCompatActivity {
                 "Réservation validée ! " + nombreFilms + " film(s) réservé(s)",
                 Toast.LENGTH_LONG).show();
 
+            //Ajouter le code pour traiter la réservation des films
+            //[...]
+
             // Vider le panier après validation
             PanierManager.getInstance().viderPanier();
             panierAdapter.notifyDataSetChanged();

@@ -172,4 +172,26 @@ public class ListefilmsActivity extends AppCompatActivity {
 
         Log.d("mydebug", ">>>Films filtrés: " + filmListFiltree.size() + " sur " + filmList.size());
     }
+
+    private void chargerStockPourTousLesFilms() {
+        Log.d("mydebug", ">>>Chargement du stock pour " + filmList.size() + " films");
+        for (Film film : filmList) {
+            new CheckAvailabilityTask(this).execute(film.getFilmId());
+        }
+    }
+
+    public void handleAvailabilityResult(int filmId, int availableCount) {
+        Log.d("mydebug", ">>>Stock reçu pour film " + filmId + ": " + availableCount);
+
+        // Trouver le film dans la liste et mettre à jour son stock
+        for (Film film : filmList) {
+            if (film.getFilmId() == filmId) {
+                film.setAvailableCount(availableCount);
+                break;
+            }
+        }
+
+        // Rafraîchir l'adapter pour afficher le nouveau stock
+        filmFormatageDonnées.notifyDataSetChanged();
+    }
 }

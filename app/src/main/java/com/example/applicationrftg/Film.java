@@ -13,6 +13,7 @@ public class Film {
     private String rating;
     private String specialFeatures;
     private String lastUpdate;
+    private int availableCount = -1; // -1 signifie "non chargé"
 
     public Film() {
     }
@@ -66,6 +67,10 @@ public class Film {
         return lastUpdate;
     }
 
+    public int getAvailableCount() {
+        return availableCount;
+    }
+
     // Setters
     public void setFilmId(int filmId) {
         this.filmId = filmId;
@@ -113,5 +118,9 @@ public class Film {
 
     public void setLastUpdate(String lastUpdate) {
         this.lastUpdate = lastUpdate;
+    }
+
+    public void setAvailableCount(int availableCount) {
+        this.availableCount = availableCount;
     }
 }

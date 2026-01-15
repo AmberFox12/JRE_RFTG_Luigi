@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,7 @@ public class FilmFormatageDonnées extends ArrayAdapter<Film> {
             // Créer le LinearLayout principal
             rowView = new LinearLayout(context);
             rowView.setOrientation(LinearLayout.HORIZONTAL);
-            rowView.setWeightSum(10);
+            rowView.setWeightSum(8);
             rowView.setPadding(dpToPx(4), dpToPx(4), dpToPx(4), dpToPx(4));
 
             // Ajouter l'effet de sélection
@@ -55,11 +56,7 @@ public class FilmFormatageDonnées extends ArrayAdapter<Film> {
             TextView filmRating = createTextView(1.5f, false);
             filmRating.setTag("rating");
 
-            // Créer les boutons "Détails" et "Réserver"
-            Button detailButton = createButton(2);
-            detailButton.setText("Détails");
-            detailButton.setTag("detailButton");
-
+            // Créer le bouton "Réserver"
             Button reserveButton = createButton(2);
             reserveButton.setText("Réserver");
             reserveButton.setTag("reserveButton");
@@ -68,7 +65,6 @@ public class FilmFormatageDonnées extends ArrayAdapter<Film> {
             rowView.addView(filmTitle);
             rowView.addView(filmYear);
             rowView.addView(filmRating);
-            rowView.addView(detailButton);
             rowView.addView(reserveButton);
         }
 
@@ -79,7 +75,6 @@ public class FilmFormatageDonnées extends ArrayAdapter<Film> {
         TextView titleTextView = (TextView) rowView.findViewWithTag("title");
         TextView yearTextView = (TextView) rowView.findViewWithTag("year");
         TextView ratingTextView = (TextView) rowView.findViewWithTag("rating");
-        Button detailButton = (Button) rowView.findViewWithTag("detailButton");
         Button reserveButton = (Button) rowView.findViewWithTag("reserveButton");
 
         titleTextView.setText(film.getTitle());
@@ -106,25 +101,56 @@ public class FilmFormatageDonnées extends ArrayAdapter<Film> {
             }
         });
 
-        // Configurer le bouton pour ouvrir la page de détails
-        detailButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                context.startActivity(detailIntent);
-            }
-        });
         // Configurer le bouton pour ajouter le film au panier
         reserveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Ajouter le film au panier
-                PanierManager.getInstance().ajouterFilm(film);
+                // Vérifier si le stock a déjà été chargé
+                int availableCount = film.getAvailableCount();
 
-                // Afficher une confirmation
-                Toast.makeText(context,
-                    film.getTitle() + " ajouté au panier (" +
-                    PanierManager.getInstance().getNombreFilms() + " film(s))",
-                    Toast.LENGTH_SHORT).show();
+                if (availableCount == -1) {
+                    // Stock pas encore chargé, vérifier d'abord
+                    Toast.makeText(context, "Vérification de la disponibilité...", Toast.LENGTH_SHORT).show();
+
+                    Log.d("FilmFormatage", "Checking availability for film: " + film.getTitle() + " (ID: " + film.getFilmId() + ")");
+
+                    new CheckAvailabilityTask(new CheckAvailabilityTask.AvailabilityCallback() {
+                        @Override
+                        public void onAvailabilityChecked(int filmId, int count) {
+                            // Mettre à jour le stock du film
+                            film.setAvailableCount(count);
+
+                            Log.d("FilmFormatage", "Availability result for film " + filmId + ": " + count + " copies");
+
+                            // Vérifier la disponibilité et ajouter au panier si possible
+                            if (count > 0) {
+                                PanierManager.getInstance().ajouterFilm(film);
+                                Toast.makeText(context,
+                                    film.getTitle() + " ajouté au panier (" +
+                                    PanierManager.getInstance().getNombreFilms() + " film(s))",
+                                    Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(context,
+                                    "Désolé, \"" + film.getTitle() + "\" n'est plus disponible (0 DVD disponibles)",
+                                    Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }).execute(film.getFilmId());
+
+                } else if (availableCount > 0) {
+                    // Stock disponible, ajouter directement au panier
+                    PanierManager.getInstance().ajouterFilm(film);
+                    Toast.makeText(context,
+                        film.getTitle() + " ajouté au panier (" +
+                        PanierManager.getInstance().getNombreFilms() + " film(s))",
+                        Toast.LENGTH_SHORT).show();
+
+                } else {
+                    // Pas de stock disponible
+                    Toast.makeText(context,
+                        "Désolé, \"" + film.getTitle() + "\" n'est plus disponible",
+                        Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
