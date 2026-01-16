@@ -79,6 +79,9 @@ public class PanierAdapter extends ArrayAdapter<Film> {
             @Override
             public void onClick(View v) {
                 PanierManager.getInstance().retirerFilm(currentPosition);
+                // Mettre à jour la liste locale avec la nouvelle liste du panier
+                filmList.clear();
+                filmList.addAll(PanierManager.getInstance().getFilmsPanier());
                 notifyDataSetChanged();
                 panierActivity.updateTotal();
                 Toast.makeText(context,

@@ -58,7 +58,7 @@ public class FilmFormatageDonnées extends ArrayAdapter<Film> {
 
             // Créer le bouton "Réserver"
             Button reserveButton = createButton(2);
-            reserveButton.setText("Réserver");
+            reserveButton.setText("Ajouter au panier");
             reserveButton.setTag("reserveButton");
 
             // Ajouter les vues au LinearLayout

@@ -42,6 +42,9 @@ public class CheckAvailabilityTask extends AsyncTask<Integer, Void, Integer> {
             // Configuration de la requête GET
             connection.setRequestMethod("GET");
             connection.setDoInput(true);
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.e30.jg2m4pLbAlZv1h5uPQ6fU38X23g65eXMX8q-SXuIPDg");
 
             Log.d("CheckAvailability", "Sending request to: " + url.toString());
 
