@@ -49,6 +49,33 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"/>
 
+    <!-- Label serveur -->
+    <TextView
+        android:id="@+id/textViewServeur"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:text="Serveur"
+        android:textSize="14sp"
+        android:textColor="#4E3016"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passwordField" />
+
+    <!-- Menu déroulant URLs -->
+    <Spinner
+        android:id="@+id/spinnerURLs"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="32dp"
+        android:background="@android:drawable/btn_dropdown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewServeur" />
+
     <Button
         android:id="@+id/connecte"
         android:layout_width="0dp"
@@ -56,7 +83,7 @@
         android:text="Connexion"
         android:textSize="16sp"
         android:onClick="ConnectToHomePage"
-        app:layout_constraintTop_toBottomOf="@+id/passwordField"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerURLs"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp"

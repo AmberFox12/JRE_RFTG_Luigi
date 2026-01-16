@@ -36,7 +36,7 @@ public class CheckAvailabilityTask extends AsyncTask<Integer, Void, Integer> {
 
         try {
             // URL de l'API
-            URL url = new URL("http://10.0.2.2:8180/inventories/available/film/" + filmId);
+            URL url = new URL(UrlManager.getURLConnexion() + "/inventories/available/film/" + filmId);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
             // Configuration de la requête GET

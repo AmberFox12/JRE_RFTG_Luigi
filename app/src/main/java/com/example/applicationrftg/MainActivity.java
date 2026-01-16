@@ -6,7 +6,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,7 +18,15 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText emailField;
     private EditText passwordField;
+    private Spinner spinnerURLs;
     private TextView errorMessage;
+
+    // Liste des URLs prédéfinies
+    private final String[] urlOptions = {
+        "http://10.0.2.2:8180",      // Émulateur Android -> localhost
+        "http://192.168.1.100:8180", // IP locale réseau
+        "http://localhost:8180"      // Localhost direct
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +37,26 @@ public class MainActivity extends AppCompatActivity {
         emailField = findViewById(R.id.emailField);
         passwordField = findViewById(R.id.passwordField);
         errorMessage = findViewById(R.id.errorMessage);
+        spinnerURLs = findViewById(R.id.spinnerURLs);
+
+        // Configurer le Spinner avec les URLs
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+            android.R.layout.simple_spinner_item, urlOptions);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerURLs.setAdapter(adapter);
+
+        // Listener pour le changement de sélection
+        spinnerURLs.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedUrl = urlOptions[position];
+                UrlManager.setURLConnexion(selectedUrl);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
         // Pré-remplir pour les tests
         emailField.setText("MARY.SMITH@peachcustomer.org");

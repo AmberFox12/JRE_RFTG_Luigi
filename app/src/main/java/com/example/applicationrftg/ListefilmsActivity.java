@@ -71,17 +71,14 @@ public class ListefilmsActivity extends AppCompatActivity {
         });
 
         // Appeler le service web
-        URL urlAAppeler = null;
         try {
-            urlAAppeler = new URL("http://10.0.2.2:8180/films");
-            Log.d("mydebug", ">>> onCreate - URL à appeler : " + urlAAppeler.toString());
-            new ListefilmsTask(this).execute(urlAAppeler, null, null);
+            URL url = new URL(UrlManager.getURLConnexion() + "/films");
+            Log.d("mydebug", ">>> onCreate - URL à appeler : " + url.toString());
+            new ListefilmsTask(this).execute(url, null, null);
 
         } catch (MalformedURLException mue) {
             Log.d("mydebug", ">>>Pour AppelerServiceRestGETTask - Mal-formedURLException mue=" + mue.toString());
             textListeFilm.setText("Erreur: URL invalide");
-        } finally {
-            urlAAppeler = null;
         }
     }
 

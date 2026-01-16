@@ -28,7 +28,7 @@ public class LoginTask extends AsyncTask<String, Void, Integer> {
 
         try {
             // URL de l'API
-            URL url = new URL("http://10.0.2.2:8180/customers/verify");
+            URL url = new URL(UrlManager.getURLConnexion() + "/customers/verify");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
             // Configuration de la requête POST
