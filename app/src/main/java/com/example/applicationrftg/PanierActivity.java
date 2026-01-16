@@ -2,6 +2,7 @@ package com.example.applicationrftg;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -9,78 +10,111 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class PanierActivity  extends AppCompatActivity {
+public class PanierActivity extends AppCompatActivity {
 
     private ListView listePanier;
     private TextView totalPanier;
     private Button backButton;
-    private PanierAdapter panierAdapter;
-    private List<Film> filmsPanier;
+    private RentalAdapter rentalAdapter;
+    private List<Rental> rentals;
+    private int customerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_panier);
 
-        // Initialiser le PanierManager avec la base de données
-        PanierManager.getInstance().initialiser(this);
+        // Récupérer le customerId depuis SharedPreferences
+        SharedPreferences preferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        customerId = preferences.getInt("customerId", -1);
 
         // Initialiser les vues
         listePanier = findViewById(R.id.listePanier);
         totalPanier = findViewById(R.id.totalPanier);
         backButton = findViewById(R.id.backButton);
 
-        // Récupérer les films du panier
-        filmsPanier = PanierManager.getInstance().getFilmsPanier();
-
-        // Créer l'adapter
-        panierAdapter = new PanierAdapter(this, filmsPanier, this);
-        listePanier.setAdapter(panierAdapter);
-
-        // Mettre à jour le compteur
-        updateTotal();
+        // Initialiser la liste
+        rentals = new ArrayList<>();
+        rentalAdapter = new RentalAdapter(this, rentals, this);
+        listePanier.setAdapter(rentalAdapter);
 
         // Configurer le bouton retour
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        backButton.setOnClickListener(v -> finish());
+
+        // Charger le panier depuis l'API
+        loadCart();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Rafraîchir la liste quand on revient sur la page
-        panierAdapter.notifyDataSetChanged();
-        updateTotal();
+        loadCart();
+    }
+
+    private void loadCart() {
+        if (customerId <= 0) {
+            Toast.makeText(this, "Erreur: utilisateur non connecté", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new GetCartTask(cartRentals -> {
+            rentals.clear();
+            rentals.addAll(cartRentals);
+            rentalAdapter.notifyDataSetChanged();
+            updateTotal();
+        }).execute(customerId);
     }
 
     public void updateTotal() {
-        int nombreFilms = PanierManager.getInstance().getNombreFilms();
+        int nombreFilms = rentals.size();
         totalPanier.setText(nombreFilms + " film(s) sélectionné(s)");
     }
 
+    public void removeItem(int rentalId) {
+        new RemoveFromCartTask(success -> {
+            if (success) {
+                Toast.makeText(this, "Film retiré du panier", Toast.LENGTH_SHORT).show();
+                loadCart();
+            } else {
+                Toast.makeText(this, "Erreur lors de la suppression", Toast.LENGTH_SHORT).show();
+            }
+        }).execute(rentalId);
+    }
+
     public void validerPanier(View view) {
-        int nombreFilms = PanierManager.getInstance().getNombreFilms();
-
-        if (nombreFilms == 0) {
+        if (rentals.isEmpty()) {
             Toast.makeText(this, "Votre panier est vide", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this,
-                "Réservation validée ! " + nombreFilms + " film(s) réservé(s)",
-                Toast.LENGTH_LONG).show();
-
-            //Ajouter le code pour traiter la réservation des films
-            //[...]
-
-            // Vider le panier après validation
-            PanierManager.getInstance().viderPanier();
-            panierAdapter.notifyDataSetChanged();
-            updateTotal();
+            return;
         }
+
+        new CheckoutCartTask((success, itemsCount) -> {
+            if (success) {
+                Toast.makeText(this,
+                        "Réservation validée ! " + itemsCount + " film(s) réservé(s)",
+                        Toast.LENGTH_LONG).show();
+                loadCart();
+            } else {
+                Toast.makeText(this, "Erreur lors de la validation", Toast.LENGTH_SHORT).show();
+            }
+        }).execute(customerId);
+    }
+
+    public void viderPanier(View view) {
+        if (rentals.isEmpty()) {
+            Toast.makeText(this, "Votre panier est déjà vide", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new ClearCartTask(success -> {
+            if (success) {
+                Toast.makeText(this, "Panier vidé", Toast.LENGTH_SHORT).show();
+                loadCart();
+            } else {
+                Toast.makeText(this, "Erreur lors du vidage du panier", Toast.LENGTH_SHORT).show();
+            }
+        }).execute(customerId);
     }
 }

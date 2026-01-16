@@ -2,6 +2,7 @@ package com.example.applicationrftg;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Log;
@@ -20,11 +21,16 @@ public class FilmFormatageDonnées extends ArrayAdapter<Film> {
 
     private Context context;
     private List<Film> filmList;
+    private int customerId;
 
     public FilmFormatageDonnées(Context context, List<Film> filmList) {
         super(context, 0, filmList);
         this.context = context;
         this.filmList = filmList;
+
+        // Récupérer le customerId depuis SharedPreferences
+        SharedPreferences preferences = context.getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        this.customerId = preferences.getInt("customerId", -1);
     }
 
     @Override
@@ -105,52 +111,20 @@ public class FilmFormatageDonnées extends ArrayAdapter<Film> {
         reserveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Vérifier si le stock a déjà été chargé
-                int availableCount = film.getAvailableCount();
-
-                if (availableCount == -1) {
-                    // Stock pas encore chargé, vérifier d'abord
-                    Toast.makeText(context, "Vérification de la disponibilité...", Toast.LENGTH_SHORT).show();
-
-                    Log.d("FilmFormatage", "Checking availability for film: " + film.getTitle() + " (ID: " + film.getFilmId() + ")");
-
-                    new CheckAvailabilityTask(new CheckAvailabilityTask.AvailabilityCallback() {
-                        @Override
-                        public void onAvailabilityChecked(int filmId, int count) {
-                            // Mettre à jour le stock du film
-                            film.setAvailableCount(count);
-
-                            Log.d("FilmFormatage", "Availability result for film " + filmId + ": " + count + " copies");
-
-                            // Vérifier la disponibilité et ajouter au panier si possible
-                            if (count > 0) {
-                                PanierManager.getInstance().ajouterFilm(film);
-                                Toast.makeText(context,
-                                    film.getTitle() + " ajouté au panier (" +
-                                    PanierManager.getInstance().getNombreFilms() + " film(s))",
-                                    Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(context,
-                                    "Désolé, \"" + film.getTitle() + "\" n'est plus disponible (0 DVD disponibles)",
-                                    Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    }).execute(film.getFilmId());
-
-                } else if (availableCount > 0) {
-                    // Stock disponible, ajouter directement au panier
-                    PanierManager.getInstance().ajouterFilm(film);
-                    Toast.makeText(context,
-                        film.getTitle() + " ajouté au panier (" +
-                        PanierManager.getInstance().getNombreFilms() + " film(s))",
-                        Toast.LENGTH_SHORT).show();
-
-                } else {
-                    // Pas de stock disponible
-                    Toast.makeText(context,
-                        "Désolé, \"" + film.getTitle() + "\" n'est plus disponible",
-                        Toast.LENGTH_SHORT).show();
+                if (customerId <= 0) {
+                    Toast.makeText(context, "Erreur: utilisateur non connecté", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                Toast.makeText(context, "Ajout en cours...", Toast.LENGTH_SHORT).show();
+
+                new AddToCartTask((success, message) -> {
+                    if (success) {
+                        Toast.makeText(context, film.getTitle() + " ajouté au panier", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                    }
+                }).execute(customerId, film.getFilmId());
             }
         });
 

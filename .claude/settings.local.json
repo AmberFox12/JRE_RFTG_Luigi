@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/BTS/Web-Service-RFTG/BTS_SIO_RFTG-2025-2026_BackEnd/toad-backend/src/main/java/com/rftg/toad/repository/**)",
+      "Read(//c/BTS/Web-Service-RFTG/BTS_SIO_RFTG-2025-2026_BackEnd/toad-backend/src/main/java/com/rftg/toad/controller/**)"
+    ]
+  }
+}

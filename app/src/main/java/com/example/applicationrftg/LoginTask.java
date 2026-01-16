@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.MessageDigest;
 
 public class LoginTask extends AsyncTask<String, Void, Integer> {
 
@@ -20,30 +21,57 @@ public class LoginTask extends AsyncTask<String, Void, Integer> {
     public LoginTask(MainActivity activity) {
         this.mainActivity = activity;
     }
+    
+
+    public static String md5(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(input.getBytes("UTF-8"));
+
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : messageDigest) {
+                String hex = Integer.toHexString(0xFF & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     @Override
     protected Integer doInBackground(String... params) {
         String email = params[0];
         String password = params[1];
 
+        // 🔐 Hachage MD5
+        String passwordCrypte = md5(password);
+
+        // LOG POUR VOIR LE MOT DE PASSE CRYPTÉ
+        Log.d("mydebug", "========================================");
+        Log.d("mydebug", "EMAIL : " + email);
+        Log.d("mydebug", "MOT DE PASSE ORIGINAL : " + password);
+        Log.d("mydebug", "MOT DE PASSE CRYPTÉ MD5 : " + passwordCrypte);
+        Log.d("mydebug", "========================================");
+
         try {
-            // URL de l'API
             URL url = new URL(UrlManager.getURLConnexion() + "/customers/verify");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
-            // Configuration de la requête POST
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setDoOutput(true);
             connection.setDoInput(true);
 
-            // Créer le JSON body
+            // Créer le JSON body avec le mot de passe haché
             JSONObject jsonBody = new JSONObject();
             jsonBody.put("email", email);
-            jsonBody.put("password", password);
-
-            Log.d("LoginTask", "Sending request to: " + url.toString());
-            Log.d("LoginTask", "Request body: " + jsonBody.toString());
+            jsonBody.put("password", passwordCrypte);
 
             // Envoyer la requête
             OutputStream outputStream = connection.getOutputStream();

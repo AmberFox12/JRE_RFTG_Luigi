@@ -1,6 +1,7 @@
 package com.example.applicationrftg;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -14,14 +15,16 @@ public class DetailfilmActivity extends AppCompatActivity {
     private TextView filmTitle, filmDescription, filmYear, filmRating, filmLength, filmRentalDuration, filmSpecialFeatures;
     private Button reserveFilmButton, backButton;
     private Film currentFilm;
+    private int customerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailfilm);
 
-        // Initialiser le PanierManager avec la base de données
-        PanierManager.getInstance().initialiser(this);
+        // Récupérer le customerId depuis SharedPreferences
+        SharedPreferences preferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        customerId = preferences.getInt("customerId", -1);
 
         // Initialiser les vues
         filmTitle = findViewById(R.id.filmTitle);
@@ -57,13 +60,26 @@ public class DetailfilmActivity extends AppCompatActivity {
         reserveFilmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (currentFilm != null) {
-                    PanierManager.getInstance().ajouterFilm(currentFilm);
-                    Toast.makeText(DetailfilmActivity.this,
-                        currentFilm.getTitle() + " ajouté au panier (" +
-                        PanierManager.getInstance().getNombreFilms() + " film(s))",
-                        Toast.LENGTH_SHORT).show();
+                if (currentFilm == null) {
+                    return;
                 }
+
+                if (customerId <= 0) {
+                    Toast.makeText(DetailfilmActivity.this, "Erreur: utilisateur non connecté", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Toast.makeText(DetailfilmActivity.this, "Ajout en cours...", Toast.LENGTH_SHORT).show();
+
+                new AddToCartTask((success, message) -> {
+                    if (success) {
+                        Toast.makeText(DetailfilmActivity.this,
+                                currentFilm.getTitle() + " ajouté au panier",
+                                Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(DetailfilmActivity.this, message, Toast.LENGTH_SHORT).show();
+                    }
+                }).execute(customerId, currentFilm.getFilmId());
             }
         });
 
