@@ -26,7 +26,7 @@ public class RemoveFromCartTask extends AsyncTask<Integer, Void, Boolean> {
             URL url = new URL(UrlManager.getURLConnexion() + "/cart/" + rentalId);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("DELETE");
-            connection.setRequestProperty("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.e30.jg2m4pLbAlZv1h5uPQ6fU38X23g65eXMX8q-SXuIPDg");
+            connection.setRequestProperty("Authorization", UrlManager.getAuthHeader());
 
             Log.d("RemoveFromCartTask", "DELETE " + url);
 

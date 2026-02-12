@@ -31,7 +31,7 @@ public class CheckoutCartTask extends AsyncTask<Integer, Void, Integer> {
             URL url = new URL(UrlManager.getURLConnexion() + "/cart/checkout");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
-            connection.setRequestProperty("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.e30.jg2m4pLbAlZv1h5uPQ6fU38X23g65eXMX8q-SXuIPDg");
+            connection.setRequestProperty("Authorization", UrlManager.getAuthHeader());
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setDoOutput(true);
 

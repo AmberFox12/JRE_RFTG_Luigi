@@ -20,18 +20,18 @@ public class MainActivity extends AppCompatActivity {
     private EditText passwordField;
     private Spinner spinnerURLs;
     private TextView errorMessage;
-
-    // Liste des URLs prédéfinies
-    private final String[] urlOptions = {
-        "http://10.0.2.2:8180",      // Émulateur Android -> localhost
-        "http://192.168.1.100:8180", // IP locale réseau
-        "http://localhost:8180"      // Localhost direct
-    };
+    private String[] urlOptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Charger le token JWT depuis les ressources
+        UrlManager.setToken(getString(R.string.jwt_token));
+
+        // Charger les URLs depuis les ressources
+        urlOptions = getResources().getStringArray(R.array.listeURLs);
 
         // Initialiser les vues
         emailField = findViewById(R.id.emailField);
@@ -59,8 +59,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Pré-remplir pour les tests
-        emailField.setText("MARY.SMITH@peachcustomer.org");
-        passwordField.setText("12345");
+        emailField.setText(getString(R.string.default_email));
+        passwordField.setText(getString(R.string.default_password));
     }
 
     public void ConnectToHomePage(View view) {
